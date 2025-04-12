@@ -1,5 +1,6 @@
 # Companion mvp
-##We need to work on each module as we go. Two-week implementation plan included.
+We need to work on each module as we go. Two-week implementation plan included.
+
 A minimalist AI-powered personal assistant built to help busy individuals manage their day-to-day responsibilities through voice and text commands. This project represents a Minimum Viable Product (MVP) designed to be implemented within a 2-week timeframe.
 
 ## Project Overview
