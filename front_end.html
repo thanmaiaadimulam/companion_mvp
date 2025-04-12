@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Personal Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .input-area {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        #text-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .voice-btn {
+            background-color: #ea4335;
+        }
+        .voice-btn:hover {
+            background-color: #d33426;
+        }
+        .voice-btn.recording {
+            background-color: #fbbc05;
+        }
+        .response-area {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            min-height: 100px;
+            background-color: #f9f9f9;
+        }
+        .success {
+            color: #0f9d58;
+        }
+        .error {
+            color: #ea4335;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Personal Assistant</h1>
+        <p>How can I help you today?</p>
+        
+        <div class="input-area">
+            <input type="text" id="text-input" placeholder="Type your command (e.g., 'Post Hello on Twitter' or 'Remind me to call John at 5 PM')">
+            <button id="send-btn">Send</button>
+            <button id="voice-btn" class="voice-btn">🎤</button>
+        </div>
+        
+        <div class="response-area" id="response">
+            <p>I'm ready! Try giving me a command.</p>
+        </div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('text-input');
+        const sendBtn = document.getElementById('send-btn');
+        const voiceBtn = document.getElementById('voice-btn');
+        const responseArea = document.getElementById('response');
+        
+        let isRecording = false;
+        let recognition = null;
+        
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                textInput.value = transcript;
+                processCommand(transcript);
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                toggleRecording();
+                displayResponse('Error recognizing speech. Please try again.', false);
+            };
+            
+            recognition.onend = function() {
+                toggleRecording();
+            };
+        }
+        
+        function toggleRecording() {
+            isRecording = !isRecording;
+            
+            if (isRecording) {
+                voiceBtn.classList.add('recording');
+                voiceBtn.textContent = '⏹️';
+                recognition.start();
+            } else {
+                voiceBtn.classList.remove('recording');
+                voiceBtn.textContent = '🎤';
+                if (recognition) {
+                    recognition.stop();
+                }
+            }
+        }
+        
+        function processCommand(text) {
+            displayResponse('Processing: "' + text + '"...', true);
+            
+            fetch('/process_text', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResponse(data.message, data.success);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                displayResponse('Error processing your request. Please try again.', false);
+            });
+        }
+        
+        function displayResponse(message, success) {
+            const statusClass = success ? 'success' : 'error';
+            responseArea.innerHTML = `<p class="${statusClass}">${message}</p>`;
+        }
+        
+        // Event listeners
+        sendBtn.addEventListener('click', () => {
+            const text = textInput.value.trim();
+            if (text) {
+                processCommand(text);
+            }
+        });
+        
+        textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const text = textInput.value.trim();
+                if (text) {
+                    processCommand(text);
+                }
+            }
+        });
+        
+        voiceBtn.addEventListener('click', () => {
+            if ('webkitSpeechRecognition' in window) {
+                toggleRecording();
+            } else {
+                displayResponse('Speech recognition is not supported in your browser.', false);
+            }
+        });
+    </script>
+</body>
+</html>

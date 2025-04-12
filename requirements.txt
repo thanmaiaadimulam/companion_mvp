@@ -1,0 +1,7 @@
+flask==2.0.1
+spacy==3.2.0
+tweepy==4.4.0
+linkedin-api==1.1.1
+apscheduler==3.8.1
+python-dateutil==2.8.2
+SpeechRecognition==3.8.1
