@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# API keys and secrets
+config.py
+*.pem
+*.key
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# OS generated files
+.DS_Store
